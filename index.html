@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Leather Panel Simulator</title>
+  <style>
+.preview-border {
+  pointer-events: none;
+}
+
+html, body, {
+  background-color: white !important;
+  color: black !important;
+  border-color: black !important;
+}
+
+  * {
+    background-color: white !important;
+    color: black !important;
+  }
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    .simulator-container {
+      max-width: 100%;
+      margin: auto;
+    }
+    .simulator-grid {
+      position: relative;
+    background-color: #6fa8dc !important;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    .panel {
+      background: #6fa8dc;
+      position: absolute;
+      z-index: 2;
+      border: 1px dotted #003;
+      box-sizing: border-box;
+    }
+    .leftover {
+    background-color: #f4cccc !important;
+      border: 1px dashed #d00;
+      position: absolute;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="simulator-container">
+  <h2>Leather Panel Simulator</h2>
+
+  <label>Choose panel type:</label><br>
+
+  <select id="panelSelect" style="width:100%; padding:6px;">
+    <option value="abondance">Abondance (80.5 × 63 cm)</option>
+    <option value="almohadon">Almohadon (75 × 65 cm)</option>
+    <option value="cartouche">Cartouche (71.8 × 22.95 cm)</option>
+    <option value="curules">Curules (72 × 66 cm)</option>
+    <option value="deco">Deco (90.5 × 65 cm)</option>
+    <option value="double_damask">Double Damask (100 × 74 cm)</option>
+    <option value="domino">Domino (80 × 56 cm)</option>
+    <option value="dragon">Dragon (77.5 × 59.5 cm)</option>
+    <option value="eve">Eve (69 × 88 cm)</option>
+    <option value="fleurence">Fleurence (77 × 58 cm)</option>
+    <option value="gerona">Gerona (80 × 60 cm)</option>
+    <option value="grand_soleil">Grand Soleil (120 × 90 cm)</option>
+    <option value="korfus">Korfus (55 × 46.5 cm)</option>
+    <option value="lauderdale">Lauderdale (83 × 67 cm)</option>
+    <option value="laurier">Laurier (55.5 × 46.5 cm)</option>
+    <option value="marot">Marot (76.5 × 61.5 cm)</option>
+    <option value="mandarin">Mandarin (74 × 74 cm)</option>
+    <option value="moncla">Moncla (76 × 60 cm)</option>
+    <option value="ottoman">Ottoman (75 × 75 cm)</option>
+    <option value="palmette">Palmette (58.5 × 46.5 cm)</option>
+    <option value="parot">Parot Panel (75 × 59 cm)</option>
+    <option value="plaisance">Plaisance (69.5 × 79 cm)</option>
+    <option value="petit_soleil">Petit Soleil (59 × 49 cm)</option>
+    <option value="torino">Torino Passion (89 × 55 cm)</option>
+    <option value="verentuil">Verentuil (73 × 60 cm)</option>
+    <option value="vernes">Vernes (102 × 78 cm)</option>
+  </select><br><br>
+
+<label>Unit:</label>
+<select id="unitSelect" style="margin-bottom:10px;">
+  <option value="cm">Centimeters (cm)</option>
+  <option value="in">Inches (in)</option>
+</select><br>
+
+<div id="cmInputs">
+  <label for="wallWidth" id="wallWidthLabel">Wall width (cm):</label><br>
+  <input id="wallWidth" type="number" placeholder="e.g. 250" style="width:100%; padding:4px;"><br><br>
+
+  <label for="wallHeight" id="wallHeightLabel">Wall height (cm):</label><br>
+  <input id="wallHeight" type="number" placeholder="e.g. 220" style="width:100%; padding:4px;"><br><br>
+</div>
+
+<div id="inchInputs" style="display:none;">
+  <label>Wall width:</label><br>
+  <input id="wallWidthFeet" type="number" placeholder="Feet (')" style="width:48%; padding:4px;">
+  <input id="wallWidthInches" type="number" placeholder='Inches (")' style="width:48%; padding:4px;"><br><br>
+
+  <label>Wall height:</label><br>
+  <input id="wallHeightFeet" type="number" placeholder="Feet (')" style="width:48%; padding:4px;">
+  <input id="wallHeightInches" type="number" placeholder='Inches (")' style="width:48%; padding:4px;"><br><br>
+</div>
+
+
+
+ <label><input type="checkbox" id="centerPanels"> Center panels in the wall</label><br><br>
+  <label><input type="checkbox" id="rotatePanel"> Rotate panel</label><br><br>
+
+
+
+  <button onclick="simulatePanels()" style="padding:6px 12px;">Simulate</button>
+
+  <div id="summary" style="margin-top: 20px;"></div>
+  <div id="grid" class="simulator-grid"></div>
+</div>
+
+<script>
+
+function toCM(value, unit) {
+  return unit === "in" ? value * 2.54 : value;
+}
+
+function fromCM(value, unit) {
+  return unit === "in" ? value / 2.54 : value;
+}
+
+function displayUnit(value, unit) {
+  return unit === "in" ? value.toFixed(2) + " in" : value.toFixed(1) + " cm";
+}
+
+
+const panels = {
+  "fleurence": { name: "Fleurence", width: 77, height: 58, orientation: "paysage", rotatable: true  },
+  "eve": { name: "Eve", width: 69, height: 88, orientation: "portrait", rotatable: true  },
+  "grand_soleil": { name: "Grand Soleil", width: 120, height: 90, orientation: "paysage", rotatable: true  },
+  "abondance": { name: "Abondance", width: 63, height: 80.5, orientation: "portrait", rotatable: false },
+  "almohadon": { name: "Almohadon", width: 65, height: 75, orientation: "portrait", rotatable: true  },
+  "cartouche": { name: "Cartouche", width: 71.8, height: 22.95, orientation: "portrait", rotatable: true  },
+  "curules": { name: "Curules", width: 72, height: 66, orientation: "portrait", rotatable: true  },
+  "deco": { name: "Deco", width: 65, height: 90.5, orientation: "portrait", rotatable: true  },
+  "double_damask": { name: "Double Damask", width: 100, height: 74, orientation: "paysage" },
+  "domino": { name: "Domino", width: 56, height: 80, orientation: "portrait", rotatable: true  },
+  "dragon": { name: "Dragon", width: 59.5, height: 77.5, orientation: "portrait", rotatable: false },
+  "gerona": { name: "Gerona", width: 60, height: 80, orientation: "portrait", rotatable: true  },
+  "korfus": { name: "Korfus", width: 46.5, height: 55, orientation: "portrait", rotatable: false },
+  "lauderdale": { name: "Lauderdale", width: 67, height: 83, orientation: "portrait", rotatable: true  },
+  "laurier": { name: "Laurier", width: 46.5, height: 55.5, orientation: "portrait", rotatable: false },
+  "marot": { name: "Marot", width: 61.5, height: 76.5, orientation: "portrait", rotatable: false },
+  "mandarin": { name: "Mandarin", width: 74, height: 74, orientation: "paysage", rotatable: true  },
+  "moncla": { name: "Moncla", width: 60, height: 76, orientation: "portrait", rotatable: false },
+  "ottoman": { name: "Ottoman", width: 75, height: 75, orientation: "paysage", rotatable: true  },
+  "palmette": { name: "Palmette", width: 46.5, height: 58.5, orientation: "portrait", rotatable: false },
+  "parot": { name: "Parot Panel", width: 75, height: 59, orientation: "paysage", rotatable: false },
+  "plaisance": { name: "Plaisance", width: 79, height: 69.5, orientation: "paysage", rotatable: true  },
+  "petit_soleil": { name: "Petit Soleil", width: 59, height: 49, orientation: "portrait", rotatable: true  },
+  "torino": { name: "Torino Passion", width: 55, height: 89, orientation: "portrait", rotatable: false },
+  "verentuil": { name: "Verentuil", width: 60, height: 73, orientation: "portrait", rotatable: false },
+  "vernes": { name: "Vernes", width: 102, height: 78, orientation: "paysage", rotatable: true }
+};
+
+
+const panelImages = {
+   "fleurence": {
+left: "https://lutson.com/wp-content/uploads/2025/06/Fleurance-scaled.jpg",
+right: "https://lutson.com/wp-content/uploads/2025/06/Fleurance-cote-b-rogne-scaled.jpg"
+},
+   "eve": "https://lutson.com/wp-content/uploads/2025/06/Eve-scaled.jpg",
+   "abondance": {
+left: "https://lutson.com/wp-content/uploads/2025/06/Abondance-scaled.jpg",
+right: "https://lutson.com/wp-content/uploads/2025/06/P5113845-APRES-scaled.jpg"
+},
+    "grand_soleil": "https://lutson.com/wp-content/uploads/2025/06/Grand-Soleil-scaled.jpg",
+    "almohadon": "https://lutson.com/wp-content/uploads/2025/06/P3031116.jpg",
+    "curules": "https://lutson.com/wp-content/uploads/2025/06/Curules-72-X-66-cm-.jpg",
+    "deco": "https://lutson.com/wp-content/uploads/2025/06/050.jpg",
+    "double_damask": "https://lutson.com/wp-content/uploads/2025/06/double-damask.jpg",
+    "domino": "https://lutson.com/wp-content/uploads/2025/06/Domino-SG--scaled.jpg",
+    "dragon": "https://lutson.com/wp-content/uploads/2025/06/Dragon-77-X-595-cm--scaled.jpg",
+    "gerona": "https://lutson.com/wp-content/uploads/2025/06/Gerona-°.jpg",
+    "korfus": "https://lutson.com/wp-content/uploads/2025/06/Korfus-poly-APRES.jpg",
+    "lauderdale": "https://lutson.com/wp-content/uploads/2025/06/lauderdale-geknipt-2.jpg",
+    "laurier": "https://lutson.com/wp-content/uploads/2025/06/11-Laurier-Poly-575-X-465-APRES.jpg",
+    "marot": "https://lutson.com/wp-content/uploads/2025/06/Marot-Polychrome-765X615cm-scaled.jpg",
+    "mandarin": "https://lutson.com/wp-content/uploads/2025/06/PC093283-AFTER.jpg",
+    "moncla": "https://lutson.com/wp-content/uploads/2025/06/Moncla-Poly-chrome-for-Larvik-Museum-Norway-APRES-scaled.jpg",
+    "ottoman": "https://lutson.com/wp-content/uploads/2025/06/Ottoman-SG-APRES-scaled.jpg",
+    "palmette": "https://lutson.com/wp-content/uploads/2025/06/Palmette-58.5-X-46.5.jpg",
+    "parot": "https://lutson.com/wp-content/uploads/2025/06/Parrot-75-X-59-cm.jpg",
+    "plaisance": "https://lutson.com/wp-content/uploads/2025/06/15-Plaisance-panel-695-X-79.jpg",
+    "petit_soleil": "https://lutson.com/wp-content/uploads/2025/06/Soleil-Panel-59-X-49-APRES.jpg",
+    "torino": "https://lutson.com/wp-content/uploads/2025/06/Torino-Schloss-Moritzburg-scaled.jpg",
+    "verentuil": "https://lutson.com/wp-content/uploads/2025/06/P5134809-Apres-scaled.jpg",
+    "vernes": "https://lutson.com/wp-content/uploads/2025/06/Verne-burgundy-green-scaled.jpg",
+
+  // Ajoute tous tes autres panneaux ici, avec les bonnes URLs
+};
+
+
+
+const borders = [
+  {
+    name: "Marot Border",
+    width: 61.5,
+    height: 33.5,
+    orientation: "paysage",
+    rotatable: false
+  },
+  {
+    name: "Flower Border",
+    width: 65,
+    height: 25.5,
+    orientation: "paysage",
+    rotatable: false
+  },
+  {
+    name: "Rose & Tulip",
+    width: 60,
+    height: 16,
+    orientation: "paysage",
+    rotatable: true
+  },
+  {
+    name: "Cabochon",
+    width: 61.5,
+    height: 4,
+    orientation: "portrait",
+    rotatable: true
+  },
+  {
+    name: "Little Flowers",
+    width: 61.5,
+    height: 4,
+    orientation: "portrait",
+    rotatable: true
+  }
+];
+
+
+
+
+function simulatePanels() {
+  const key = document.getElementById("panelSelect").value;
+  const panel = panels[key];
+  const center = document.getElementById("centerPanels").checked;
+  const rotate = document.getElementById("rotatePanel").checked;
+const unit = document.getElementById("unitSelect").value;
+
+
+let wallWidth, wallHeight;
+
+if (unit === "in") {
+  const feetW = parseFloat(document.getElementById("wallWidthFeet").value) || 0;
+  const inchW = parseFloat(document.getElementById("wallWidthInches").value) || 0;
+  const feetH = parseFloat(document.getElementById("wallHeightFeet").value) || 0;
+  const inchH = parseFloat(document.getElementById("wallHeightInches").value) || 0;
+
+  wallWidth = toCM(feetW * 12 + inchW, "in");
+  wallHeight = toCM(feetH * 12 + inchH, "in");
+} else {
+  const wallWidthInput = parseFloat(document.getElementById("wallWidth").value);
+  const wallHeightInput = parseFloat(document.getElementById("wallHeight").value);
+  wallWidth = toCM(wallWidthInput, "cm");
+  wallHeight = toCM(wallHeightInput, "cm");
+}
+
+
+
+  if (!panel || isNaN(wallWidth) || isNaN(wallHeight)) return;
+
+  let panelWidth = panel.width;
+  let panelHeight = panel.height;
+  const naturalPortrait = panel.orientation === "portrait";
+
+  if (rotate || (naturalPortrait && panel.width > panel.height) || (!naturalPortrait && panel.height > panel.width)) {
+    [panelWidth, panelHeight] = [panelHeight, panelWidth];
+  }
+
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  const maxWidthPx = 900;
+  const maxHeightPx = 600;
+  const scaleX = maxWidthPx / wallWidth;
+  const scaleY = maxHeightPx / wallHeight;
+  const scale = Math.min(scaleX, scaleY);
+
+  grid.style.width = `${wallWidth * scale}px`;
+  grid.style.height = `${wallHeight * scale}px`;
+
+  const panelsAcross = Math.floor(wallWidth / panelWidth);
+  const panelsDown = Math.floor(wallHeight / panelHeight);
+  const usedWidth = panelsAcross * panelWidth;
+  const usedHeight = panelsDown * panelHeight;
+
+  const leftoverX = wallWidth - usedWidth;
+  const leftoverY = wallHeight - usedHeight;
+  const offsetX = center ? (leftoverX / 2) * scale : 0;
+  const offsetY = center ? (leftoverY / 2) * scale : 0;
+
+  if (leftoverX > 0) {
+    const leftZone = document.createElement("div");
+    leftZone.className = "leftover";
+    leftZone.style.left = "0px";
+    leftZone.style.top = `${offsetY}px`;
+    leftZone.style.width = `${(center ? leftoverX / 2 : 0) * scale}px`;
+    leftZone.style.height = `${usedHeight * scale}px`;
+    grid.appendChild(leftZone);
+
+    const rightZone = document.createElement("div");
+    rightZone.className = "leftover";
+    rightZone.style.left = `${offsetX + usedWidth * scale}px`;
+    rightZone.style.top = `${offsetY}px`;
+    rightZone.style.width = `${(center ? leftoverX / 2 : leftoverX) * scale}px`;
+    rightZone.style.height = `${usedHeight * scale}px`;
+    grid.appendChild(rightZone);
+  }
+
+  if (leftoverY > 0) {
+    const topZone = document.createElement("div");
+    topZone.className = "leftover";
+    topZone.style.left = `${offsetX}px`;
+    topZone.style.top = "0px";
+    topZone.style.width = `${usedWidth * scale}px`;
+    topZone.style.height = `${(center ? leftoverY / 2 : 0) * scale}px`;
+    grid.appendChild(topZone);
+
+    const bottomZone = document.createElement("div");
+    bottomZone.className = "leftover";
+    bottomZone.style.left = `${offsetX}px`;
+    bottomZone.style.top = `${offsetY + usedHeight * scale}px`;
+    bottomZone.style.width = `${usedWidth * scale}px`;
+    bottomZone.style.height = `${(center ? leftoverY / 2 : leftoverY) * scale}px`;
+    grid.appendChild(bottomZone);
+  }
+
+// Coin bas droit si non centré
+if (!center && leftoverX > 0 && leftoverY > 0) {
+  const cornerDiv = document.createElement("div");
+  cornerDiv.className = "leftover";
+  cornerDiv.style.left = `${usedWidth * scale}px`;
+  cornerDiv.style.top = `${usedHeight * scale}px`;
+  cornerDiv.style.width = `${leftoverX * scale}px`;
+  cornerDiv.style.height = `${leftoverY * scale}px`;
+  grid.appendChild(cornerDiv);
+}
+
+// Ajouter les coins si le centrage est activé et qu'il reste de la place
+if (leftoverX > 0 && leftoverY > 0 && center) {
+  const cornerW = (leftoverX / 2) * scale;
+  const cornerH = (leftoverY / 2) * scale;
+
+  const cornerPositions = [
+    { left: 0, top: 0 }, // coin haut gauche
+    { left: offsetX + usedWidth * scale, top: 0 }, // coin haut droit
+    { left: 0, top: offsetY + usedHeight * scale }, // coin bas gauche
+    { left: offsetX + usedWidth * scale, top: offsetY + usedHeight * scale } // coin bas droit
+  ];
+
+  cornerPositions.forEach(pos => {
+    const div = document.createElement("div");
+    div.className = "leftover";
+    div.style.left = `${pos.left}px`;
+    div.style.top = `${pos.top}px`;
+    div.style.width = `${cornerW}px`;
+    div.style.height = `${cornerH}px`;
+    grid.appendChild(div);
+  });
+}
+
+
+  for (let y = 0; y < panelsDown; y++) {
+  for (let x = 0; x < panelsAcross; x++) {
+    const div = document.createElement("div");
+    div.className = "panel";
+    div.style.left = `${offsetX + x * panelWidth * scale}px`;
+    div.style.top = `${offsetY + y * panelHeight * scale}px`;
+    div.style.width = `${panelWidth * scale}px`;
+    div.style.height = `${panelHeight * scale}px`;
+
+    // AJOUT POUR IMAGE
+const imageEntry = panelImages[key];
+
+if (imageEntry) {
+  if (typeof imageEntry === "string") {
+    div.style.backgroundImage = `url('${imageEntry}')`;
+  } else if (typeof imageEntry === "object" && imageEntry.left && imageEntry.right) {
+    const isRight = (x + y) % 2 === 1; // alternance damier
+    const url = isRight ? imageEntry.right : imageEntry.left;
+    div.style.backgroundImage = `url('${url}')`;
+  }
+
+  div.style.backgroundSize = "cover";
+  div.style.backgroundPosition = "center";
+}
+
+
+    grid.appendChild(div);
+  }
+}
+
+
+  let summaryHTML = `
+    <p><strong>${panelsAcross}</strong> panneaux sur la largeur × <strong>${panelsDown}</strong> sur la hauteur</p>
+    <p><strong>${(panelsAcross * panelsDown)}</strong> panneaux au total</p>
+  `;
+
+  if (center) {
+    summaryHTML += `
+     <p>Restant horizontalement : ${displayUnit(leftoverX, unit)} → ${displayUnit(leftoverX / 2, unit)} à gauche, ${displayUnit(leftoverX / 2, unit)} à droite</p>
+     
+     <p>Restant verticalement : ${displayUnit(leftoverY, unit)} → ${displayUnit(leftoverY / 2, unit)} en haut, ${displayUnit(leftoverY / 2, unit)} en bas</p>
+    `;
+  } else {
+summaryHTML += `
+  <p>Restant : ${displayUnit(leftoverX, unit)} horizontalement</p>
+  <p>Restant : ${displayUnit(leftoverY, unit)} verticalement</p>
+`;
+
+  }
+
+// suggestion des bordures
+function suggestBorders(remaining, position, isCentered = false) {
+  const available = isCentered ? remaining / 2 : remaining;
+
+  return borders.filter(b => {
+    const suggestions = [];
+
+    // Cas 1 : orientation naturelle
+    const natThickness =
+      position === "topbottom"
+        ? (b.orientation === "paysage" ? b.height : b.width)
+        : (b.orientation === "paysage" ? b.width : b.height);
+
+    if (natThickness <= available) suggestions.push(true);
+
+    // Cas 2 : rotation si autorisée
+    if (b.rotatable) {
+      const rotatedThickness =
+        position === "topbottom"
+          ? (b.orientation === "paysage" ? b.width : b.height)
+          : (b.orientation === "paysage" ? b.height : b.width);
+
+      if (rotatedThickness <= available) suggestions.push(true);
+    }
+
+    return suggestions.length > 0;
+  });
+}
+
+
+
+const suggestedX = suggestBorders(leftoverX, "side", center);
+const suggestedY = suggestBorders(leftoverY, "topbottom", center);
+
+// la c'est le texte
+function describeSuggestions(suggestions, available, position) {
+  return suggestions.map(b => {
+    let possibleFits = [];
+
+    if (position === "topbottom" || position === "side") {
+      const isVertical = position === "side";
+
+      const natThickness = isVertical
+        ? (b.orientation === "paysage" ? b.width : b.height)
+        : (b.orientation === "paysage" ? b.height : b.width);
+
+      if (natThickness <= available)
+        possibleFits.push(`
+          <label>
+            <input type="checkbox" class="border-checkbox"
+                   data-name="${b.name}"
+                   data-width="${b.width}"
+                   data-height="${b.height}"
+                   data-orientation="${b.orientation}"
+                   data-rotated="false"
+                   data-position="${position}">
+            ${b.name} (${b.width}×${b.height}) → reste: ${displayUnit(available - natThickness, unit)}
+          </label>
+        `);
+
+      if (b.rotatable) {
+        const rotThickness = isVertical
+          ? (b.orientation === "paysage" ? b.height : b.width)
+          : (b.orientation === "paysage" ? b.width : b.height);
+
+        if (rotThickness <= available)
+          possibleFits.push(`
+            <label>
+              <input type="checkbox" class="border-checkbox"
+                     data-name="${b.name}"
+                     data-width="${b.height}"
+                     data-height="${b.width}"
+                     data-orientation="${b.orientation}"
+                     data-rotated="true"
+                     data-position="${position}">
+              ${b.name} (${b.height}×${b.width}) Rotated → left: ${displayUnit(available - rotThickness, unit)}
+            </label>
+          `);
+      }
+    }
+
+    return possibleFits.join("<br>");
+  });
+}
+
+// Appliquer avec leftover ajusté selon centré ou pas
+const availX = center ? leftoverX / 2 : leftoverX;
+const availY = center ? leftoverY / 2 : leftoverY;
+
+if (suggestedX.length > 0) {
+  const descX = describeSuggestions(suggestedX, availX, "side");
+  summaryHTML += `<p>Bordures possibles à gauche/droite:<br>${descX.join("<br>")}</p>`;
+}
+if (suggestedY.length > 0) {
+  const descY = describeSuggestions(suggestedY, availY, "topbottom");
+  summaryHTML += `<p>Bordures possibles en haut/bas:<br>${descY.join("<br>")}</p>`;
+}
+
+
+summaryHTML += getClosestFits(wallWidth, wallHeight);
+
+// fin de suggestion des bordures
+
+
+
+  document.getElementById("summary").innerHTML = summaryHTML;
+document.querySelectorAll(".border-checkbox").forEach(checkbox => {
+  checkbox.addEventListener("change", function () {
+    const name = this.dataset.name;
+    const width = parseFloat(this.dataset.width);
+    const height = parseFloat(this.dataset.height);
+    const position = this.dataset.position;
+    const rotated = this.dataset.rotated === "true";
+
+    // Supprime les anciens preview rectangles pour cette bordure
+    document.querySelectorAll(`.preview-border[data-name="${name}"][data-rotated="${rotated}"]`).forEach(e => e.remove());
+
+    if (!this.checked) return;
+
+    // Créer le rectangle vert de preview
+    const div = document.createElement("div");
+    div.className = "preview-border";
+    div.dataset.name = name;
+    div.dataset.rotated = rotated;
+    div.style.position = "absolute";
+    div.style.background = "rgba(0, 255, 0, 0.4)";
+    div.style.zIndex = 3;
+    div.style.border = "2px solid green";
+
+
+
+if (position === "side") {
+  const borderWidthPx = width * scale;
+  const borderHeightPx = height * scale;
+
+  const panelTop = offsetY;
+  const panelBottom = offsetY + usedHeight * scale;
+  const panelLeft = offsetX;
+  const panelRight = offsetX + usedWidth * scale;
+
+  const count = Math.floor(usedHeight * scale / borderWidthPx); // attention ici : borderWidth devient hauteur visuelle après rotation
+
+  function createRotatedBorder(x, y) {
+    const rotatedDiv = div.cloneNode();
+    rotatedDiv.className = "preview-border";
+    rotatedDiv.style.width = `${borderHeightPx}px`; // inversé car rotation
+    rotatedDiv.style.height = `${borderWidthPx}px`; // inversé car rotation
+    rotatedDiv.style.left = `${x}px`;
+    rotatedDiv.style.top = `${y}px`;
+    rotatedDiv.style.transform = "rotate(0deg)";
+    rotatedDiv.style.transformOrigin = "top left";
+    return rotatedDiv;
+  }
+
+  for (let i = 0; i < count; i++) {
+    const y = panelTop + i * borderWidthPx; // on avance selon l’épaisseur réelle des bordures empilées (après rotation)
+
+    const leftDiv = createRotatedBorder(panelLeft - borderHeightPx, y);
+    const rightDiv = createRotatedBorder(panelRight, y);
+
+    grid.appendChild(leftDiv);
+    grid.appendChild(rightDiv);
+  }
+}
+
+
+
+
+
+if (position === "topbottom") {
+  const borderHeight = (rotated ? width : height);
+  const borderHeightPx = borderHeight * scale;
+
+  const panelTop = offsetY;
+  const panelBottom = offsetY + usedHeight * scale;
+  const panelLeft = offsetX;
+  const panelWidthPx = usedWidth * scale;
+
+  // Bordure du haut
+  const topDiv = div.cloneNode();
+  topDiv.className = "preview-border";
+  topDiv.style.top = `${panelTop - borderHeightPx}px`;
+  topDiv.style.left = `${panelLeft}px`;
+  topDiv.style.width = `${panelWidthPx}px`;
+  topDiv.style.height = `${borderHeightPx}px`;
+  grid.appendChild(topDiv);
+
+  // Bordure du bas
+  const bottomDiv = div.cloneNode();
+  bottomDiv.className = "preview-border";
+  bottomDiv.style.top = `${panelBottom}px`;
+  bottomDiv.style.left = `${panelLeft}px`;
+  bottomDiv.style.width = `${panelWidthPx}px`;
+  bottomDiv.style.height = `${borderHeightPx}px`;
+  grid.appendChild(bottomDiv);
+}
+
+  });
+});
+
+}
+
+
+function getClosestFits(wallWidth, wallHeight) {
+  const wallArea = wallWidth * wallHeight;
+  const candidates = [];
+
+  Object.entries(panels).forEach(([key, panel]) => {
+    if (panel.name === "Cartouche") return;
+
+    const orientations = [{
+      width: panel.width,
+      height: panel.height,
+      rotated: false
+    }];
+
+    if (panel.rotatable) {
+      orientations.push({
+        width: panel.height,
+        height: panel.width,
+        rotated: true
+      });
+    }
+
+    orientations.forEach(orient => {
+      const panelW = orient.width;
+      const panelH = orient.height;
+
+      const fitW = Math.floor(wallWidth / panelW);
+      const fitH = Math.floor(wallHeight / panelH);
+      const count = fitW * fitH;
+
+      if (count === 0) return;
+
+      const usedW = fitW * panelW;
+      const usedH = fitH * panelH;
+      const leftoverX = wallWidth - usedW;
+      const leftoverY = wallHeight - usedH;
+
+      const lostSurface = leftoverX * wallHeight + leftoverY * wallWidth;
+
+      candidates.push({
+        name: panel.name,
+        rotated: orient.rotated,
+        count,
+        lostSurface,
+        leftoverX,
+        leftoverY
+      });
+    });
+  });
+
+  if (candidates.length === 0) {
+    return `<p>⚠️ Aucun panneau ne rentre dans ce mur.</p>`;
+  }
+
+  const top = candidates
+    .sort((a, b) => a.lostSurface - b.lostSurface)
+    .slice(0, 6);
+
+  let html = `<p>Best fit (without borders) for ${wallWidth.toFixed(0)}×${wallHeight.toFixed(0)} :</p><ol>`;
+  top.forEach(c => {
+    html += `<li><strong>${c.name}</strong>${c.rotated ? " Rotated" : ""} × ${c.count} panels → leftover: ${c.leftoverX.toFixed(0)} × ${c.leftoverY.toFixed(0)} cm</li>`;
+  });
+  html += "</ol>";
+
+  return html;
+}
+
+
+
+
+setTimeout(function () {
+  // UNITÉ : afficher les bons champs cm/in
+  const unitSelect = document.getElementById("unitSelect");
+  const cmInputs = document.getElementById("cmInputs");
+  const inchInputs = document.getElementById("inchInputs");
+  const wallWidthLabel = document.getElementById("wallWidthLabel");
+  const wallHeightLabel = document.getElementById("wallHeightLabel");
+
+  function updateUnitDisplay() {
+    const unit = unitSelect.value;
+    cmInputs.style.display = unit === "cm" ? "block" : "none";
+    inchInputs.style.display = unit === "in" ? "block" : "none";
+
+    wallWidthLabel.innerText = `Wall width (${unit})`;
+    wallHeightLabel.innerText = `Wall height (${unit})`;
+  }
+
+  unitSelect.addEventListener("change", updateUnitDisplay);
+  updateUnitDisplay();
+
+  // PANNEAUX : remplir le menu déroulant (inutile de le faire deux fois)
+  const select = document.getElementById("panelSelect");
+  Object.entries(panels).forEach(([key, val]) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = `${val.name} (${val.width} × ${val.height} cm)`;
+    select.appendChild(option);
+  });
+
+}, 200); // délai de 200ms pour s’assurer que le bloc est chargé dans WordPress
+
+</script>
+</body>
+</html>
