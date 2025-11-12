@@ -1118,7 +1118,8 @@
                 unitPrice: 150,
                 quantity: 1,
                 discount: 0,
-                total: 150
+                total: 150,
+                noMarkup: true  // Les frais de port ne sont pas affectés par la majoration client
             };
             invoiceLines.push(line);
             renderInvoiceLines();
@@ -1133,7 +1134,8 @@
                     unitPrice: parseFloat(amount),
                     quantity: 1,
                     discount: 0,
-                    total: parseFloat(amount)
+                    total: parseFloat(amount),
+                    noMarkup: true  // Les frais de port ne sont pas affectés par la majoration client
                 };
                 invoiceLines.push(line);
                 renderInvoiceLines();
@@ -1170,7 +1172,8 @@
             let subtotal = 0;
 
             invoiceLines.forEach(line => {
-                const adjustedPrice = line.unitPrice * markup;
+                // Ne pas appliquer le markup aux frais de port
+                const adjustedPrice = line.noMarkup ? line.unitPrice : line.unitPrice * markup;
                 const lineTotal = adjustedPrice * line.quantity * (1 - line.discount / 100);
                 subtotal += lineTotal;
 
@@ -1258,7 +1261,8 @@
 
             let subtotal = 0;
             const adjustedLines = invoiceLines.map(line => {
-                const adjustedPrice = line.unitPrice * markup;
+                // Ne pas appliquer le markup aux frais de port
+                const adjustedPrice = line.noMarkup ? line.unitPrice : line.unitPrice * markup;
                 const lineTotal = adjustedPrice * line.quantity * (1 - line.discount / 100);
                 subtotal += lineTotal;
                 return {
