@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lutson SARL - Comptabilité</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .lang-switch {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .lang-switch:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        table tbody tr {
+            border-bottom: 1px solid #dee2e6;
+            transition: all 0.3s;
+        }
+
+        table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        table tbody tr.sent {
+            background: #d4edda;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .invoice-preview {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .invoice-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .invoice-company-info {
+            text-align: right;
+            font-size: 11px;
+        }
+
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .invoice-client-info {
+            flex: 1;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+
+        .invoice-items table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .invoice-items th {
+            background: #f8f9fa;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .invoice-items td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .invoice-totals {
+            text-align: right;
+            margin: 20px 0;
+        }
+
+        .invoice-totals table {
+            margin-left: auto;
+            width: 300px;
+        }
+
+        .invoice-totals td {
+            padding: 5px 10px;
+        }
+
+        .invoice-total-box {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .invoice-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #6c757d;
+        }
+
+        .invoice-footer-col {
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin: 15px 0;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .invoice-lines-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .invoice-line {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: flex-end;
+        }
+
+        .invoice-line > div {
+            flex: 1;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .action-icon {
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .action-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .tab {
+                font-size: 14px;
+                padding: 15px 10px;
+            }
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice-preview, .invoice-preview * {
+                visibility: visible;
+            }
+            .invoice-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-row > div {
+            flex: 1;
+        }
+
+        .export-btn {
+            float: right;
+            margin-bottom: 15px;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Lutson SARL - <span id="headerTitle">Comptabilité</span></h1>
+            <button class="lang-switch" onclick="toggleLanguage()">🌐 <span id="langText">EN</span></button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('products')" id="tabProducts">Produits</button>
+            <button class="tab" onclick="showSection('clients')" id="tabClients">Clients</button>
+            <button class="tab" onclick="showSection('invoices')" id="tabInvoices">Factures</button>
+            <button class="tab" onclick="showSection('tracking')" id="tabTracking">Suivi</button>
+        </div>
+
+        <div class="content">
+            <!-- SECTION PRODUCTS -->
+            <div id="products" class="section active">
+                <h2 id="productsTitle">Gestion des Produits</h2>
+                <div class="grid-2 mt-20">
+                    <div>
+                        <h3 id="addProductTitle">Ajouter un Produit</h3>
+                        <form id="productForm" onsubmit="addProduct(event)">
+                            <div class="form-group">
+                                <label id="labelProductName">Nom du produit</label>
+                                <input type="text" id="productName" required>
+                            </div>
+                            <div class="form-group">
+                                <label id="labelPriceSilver">Prix Silver & Gold (€)</label>
+                                <input type="number" step="0.01" id="priceSilver" required>
+                            </div>
+                            <div class="form-group">
+                                <label id="labelPriceMono">Prix Monochrome (€)</label>
+                                <input type="number" step="0.01" id="priceMono" required>
+                            </div>
+                            <div class="form-group">
+                                <label id="labelPricePoly">Prix Polychrome (€)</label>
+                                <input type="number" step="0.01" id="pricePoly" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btnAddProduct">Ajouter</button>
+                            <button type="button" class="btn btn-warning" onclick="cancelEditProduct()" id="btnCancelProduct" style="display:none;">Annuler</button>
+                        </form>
+                    </div>
+                    <div>
+                        <h3 id="productsListTitle">Liste des Produits</h3>
+                        <div id="productsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION CLIENTS -->
+            <div id="clients" class="section">
+                <h2 id="clientsTitle">Gestion des Clients</h2>
+                <div class="grid-2 mt-20">
+                    <div>
+                        <h3 id="addClientTitle">Ajouter un Client</h3>
+                        <form id="clientForm" onsubmit="addClient(event)">
+                            <div class="form-group">
+                                <label id="labelClientName">Nom</label>
+                                <input type="text" id="clientName" required>
+                            </div>
+                            <div class="form-group">
+                                <label id="labelClientAddress">Adresse complète</label>
+                                <textarea id="clientAddress" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label id="labelClientEmail">Email</label>
+                                <input type="email" id="clientEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label id="labelClientVAT">Numéro de TVA (optionnel)</label>
+                                <input type="text" id="clientVAT">
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btnAddClient">Ajouter</button>
+                            <button type="button" class="btn btn-warning" onclick="cancelEditClient()" id="btnCancelClient" style="display:none;">Annuler</button>
+                        </form>
+                    </div>
+                    <div>
+                        <h3 id="clientsListTitle">Liste des Clients</h3>
+                        <div id="clientsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION INVOICES -->
+            <div id="invoices" class="section">
+                <h2 id="invoicesTitle">Créer une Facture/Devis</h2>
+
+                <div class="form-group mt-20">
+                    <label id="labelDocType">Type de document</label>
+                    <select id="docType">
+                        <option value="Invoice">Invoice</option>
+                        <option value="Quote">Quote</option>
+                        <option value="Pro Forma">Pro Forma</option>
+                    </select>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label id="labelSelectClient">Sélectionner le client</label>
+                        <select id="invoiceClient" required>
+                            <option value="">-- Sélectionner --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="labelClientType">Type de client</label>
+                        <select id="clientType">
+                            <option value="distributor">Distributeur (prix de base)</option>
+                            <option value="decorator">Décorateur (+30%)</option>
+                            <option value="individual">Particulier (+60%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="addVAT">
+                        <span id="labelAddVAT">Ajouter TVA 20%</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="withDeposit" onchange="toggleDeposit()">
+                        <span id="labelWithDeposit">Avec acompte</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="depositPercentGroup" style="display:none;">
+                    <label id="labelDepositPercent">Pourcentage d'acompte (%)</label>
+                    <input type="number" id="depositPercent" value="50" min="1" max="100">
+                </div>
+
+                <h3 id="addItemsTitle" class="mt-20">Ajouter des lignes</h3>
+                <div class="invoice-lines-container">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label id="labelSelectProduct">Produit</label>
+                            <select id="lineProduct">
+                                <option value="">-- Sélectionner --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="labelVersion">Version</label>
+                            <select id="lineVersion">
+                                <option value="silver">Silver & Gold</option>
+                                <option value="mono">Monochrome</option>
+                                <option value="poly">Polychrome</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="labelQuantity">Quantité</label>
+                            <input type="number" id="lineQuantity" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label id="labelDiscount">Remise (%)</label>
+                            <input type="number" id="lineDiscount" value="0" min="0" max="100">
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-success" onclick="addInvoiceLine()" id="btnAddLine">+ Ajouter</button>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions mt-20">
+                        <button type="button" class="btn btn-info" onclick="addShippingBox()" id="btnShippingBox">+ Shipping Box (150€)</button>
+                        <button type="button" class="btn btn-info" onclick="addShippingFees()" id="btnShippingFees">+ Shipping Fees</button>
+                    </div>
+                </div>
+
+                <h3 id="itemsListTitle" class="mt-20">Lignes de la facture</h3>
+                <div id="invoiceItemsList"></div>
+
+                <div class="text-right mt-20">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="generateDocument()" id="btnGenerate">Générer le Document</button>
+                </div>
+            </div>
+
+            <!-- SECTION TRACKING -->
+            <div id="tracking" class="section">
+                <button class="btn btn-success export-btn" onclick="exportCSV()" id="btnExportCSV">📥 Export CSV</button>
+                <div class="clear"></div>
+                <h2 id="trackingTitle">Suivi Comptable</h2>
+                <div id="trackingList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Aperçu du Document</h2>
+                <div>
+                    <button class="btn btn-success" onclick="downloadPDF()" id="btnDownloadPDF">📥 Download PDF</button>
+                    <button class="btn btn-info" onclick="printInvoice()" id="btnPrint">🖨️ Print</button>
+                    <button class="btn btn-danger" onclick="closeModal()">Close</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="invoicePreview" class="invoice-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL VARIABLES
+        let currentLang = 'fr';
+        let products = JSON.parse(localStorage.getItem('lutson_products')) || [];
+        let clients = JSON.parse(localStorage.getItem('lutson_clients')) || [];
+        let invoices = JSON.parse(localStorage.getItem('lutson_invoices')) || [];
+        let invoiceLines = [];
+        let editingProductId = null;
+        let editingClientId = null;
+        let currentInvoice = null;
+
+        // TRANSLATIONS
+        const translations = {
+            fr: {
+                headerTitle: 'Comptabilité',
+                langText: 'EN',
+                tabProducts: 'Produits',
+                tabClients: 'Clients',
+                tabInvoices: 'Factures',
+                tabTracking: 'Suivi',
+                productsTitle: 'Gestion des Produits',
+                addProductTitle: 'Ajouter un Produit',
+                labelProductName: 'Nom du produit',
+                labelPriceSilver: 'Prix Silver & Gold (€)',
+                labelPriceMono: 'Prix Monochrome (€)',
+                labelPricePoly: 'Prix Polychrome (€)',
+                btnAddProduct: 'Ajouter',
+                btnCancelProduct: 'Annuler',
+                productsListTitle: 'Liste des Produits',
+                clientsTitle: 'Gestion des Clients',
+                addClientTitle: 'Ajouter un Client',
+                labelClientName: 'Nom',
+                labelClientAddress: 'Adresse complète',
+                labelClientEmail: 'Email',
+                labelClientVAT: 'Numéro de TVA (optionnel)',
+                btnAddClient: 'Ajouter',
+                btnCancelClient: 'Annuler',
+                clientsListTitle: 'Liste des Clients',
+                invoicesTitle: 'Créer une Facture/Devis',
+                labelDocType: 'Type de document',
+                labelSelectClient: 'Sélectionner le client',
+                labelClientType: 'Type de client',
+                labelAddVAT: 'Ajouter TVA 20%',
+                labelWithDeposit: 'Avec acompte',
+                labelDepositPercent: 'Pourcentage d\'acompte (%)',
+                addItemsTitle: 'Ajouter des lignes',
+                labelSelectProduct: 'Produit',
+                labelVersion: 'Version',
+                labelQuantity: 'Quantité',
+                labelDiscount: 'Remise (%)',
+                btnAddLine: '+ Ajouter',
+                btnShippingBox: '+ Shipping Box (150€)',
+                btnShippingFees: '+ Shipping Fees',
+                itemsListTitle: 'Lignes de la facture',
+                btnGenerate: 'Générer le Document',
+                trackingTitle: 'Suivi Comptable',
+                btnExportCSV: '📥 Export CSV',
+                modalTitle: 'Aperçu du Document',
+                btnDownloadPDF: '📥 Download PDF',
+                btnPrint: '🖨️ Print',
+                thName: 'Nom',
+                thSilver: 'Silver & Gold',
+                thMono: 'Monochrome',
+                thPoly: 'Polychrome',
+                thActions: 'Actions',
+                thAddress: 'Adresse',
+                thEmail: 'Email',
+                thVAT: 'TVA',
+                thDate: 'Date',
+                thNumber: 'N°',
+                thType: 'Type',
+                thClient: 'Client',
+                thTotal: 'Total',
+                thSent: 'Envoyé au comptable',
+                btnEdit: 'Éditer',
+                btnDelete: 'Supprimer'
+            },
+            en: {
+                headerTitle: 'Accounting',
+                langText: 'FR',
+                tabProducts: 'Products',
+                tabClients: 'Clients',
+                tabInvoices: 'Invoices',
+                tabTracking: 'Tracking',
+                productsTitle: 'Products Management',
+                addProductTitle: 'Add a Product',
+                labelProductName: 'Product name',
+                labelPriceSilver: 'Price Silver & Gold (€)',
+                labelPriceMono: 'Price Monochrome (€)',
+                labelPricePoly: 'Price Polychrome (€)',
+                btnAddProduct: 'Add',
+                btnCancelProduct: 'Cancel',
+                productsListTitle: 'Products List',
+                clientsTitle: 'Clients Management',
+                addClientTitle: 'Add a Client',
+                labelClientName: 'Name',
+                labelClientAddress: 'Full Address',
+                labelClientEmail: 'Email',
+                labelClientVAT: 'VAT Number (optional)',
+                btnAddClient: 'Add',
+                btnCancelClient: 'Cancel',
+                clientsListTitle: 'Clients List',
+                invoicesTitle: 'Create Invoice/Quote',
+                labelDocType: 'Document type',
+                labelSelectClient: 'Select client',
+                labelClientType: 'Client type',
+                labelAddVAT: 'Add VAT 20%',
+                labelWithDeposit: 'With deposit',
+                labelDepositPercent: 'Deposit percentage (%)',
+                addItemsTitle: 'Add items',
+                labelSelectProduct: 'Product',
+                labelVersion: 'Version',
+                labelQuantity: 'Quantity',
+                labelDiscount: 'Discount (%)',
+                btnAddLine: '+ Add',
+                btnShippingBox: '+ Shipping Box (150€)',
+                btnShippingFees: '+ Shipping Fees',
+                itemsListTitle: 'Invoice lines',
+                btnGenerate: 'Generate Document',
+                trackingTitle: 'Accounting Tracking',
+                btnExportCSV: '📥 Export CSV',
+                modalTitle: 'Document Preview',
+                btnDownloadPDF: '📥 Download PDF',
+                btnPrint: '🖨️ Print',
+                thName: 'Name',
+                thSilver: 'Silver & Gold',
+                thMono: 'Monochrome',
+                thPoly: 'Polychrome',
+                thActions: 'Actions',
+                thAddress: 'Address',
+                thEmail: 'Email',
+                thVAT: 'VAT',
+                thDate: 'Date',
+                thNumber: 'N°',
+                thType: 'Type',
+                thClient: 'Client',
+                thTotal: 'Total',
+                thSent: 'Sent to accountant',
+                btnEdit: 'Edit',
+                btnDelete: 'Delete'
+            }
+        };
+
+        // LANGUAGE FUNCTIONS
+        function toggleLanguage() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLang];
+            for (let key in t) {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = t[key];
+                }
+            }
+            renderProducts();
+            renderClients();
+            renderTracking();
+        }
+
+        // NAVIGATION
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(sectionName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (sectionName === 'invoices') {
+                loadClientsForInvoice();
+                loadProductsForInvoice();
+            }
+        }
+
+        // PRODUCTS FUNCTIONS
+        function addProduct(event) {
+            event.preventDefault();
+            const product = {
+                id: editingProductId || Date.now(),
+                name: document.getElementById('productName').value,
+                priceSilver: parseFloat(document.getElementById('priceSilver').value),
+                priceMono: parseFloat(document.getElementById('priceMono').value),
+                pricePoly: parseFloat(document.getElementById('pricePoly').value)
+            };
+
+            if (editingProductId) {
+                const index = products.findIndex(p => p.id === editingProductId);
+                products[index] = product;
+                editingProductId = null;
+            } else {
+                products.push(product);
+            }
+
+            localStorage.setItem('lutson_products', JSON.stringify(products));
+            document.getElementById('productForm').reset();
+            document.getElementById('btnCancelProduct').style.display = 'none';
+            document.getElementById('btnAddProduct').textContent = translations[currentLang].btnAddProduct;
+            renderProducts();
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                editingProductId = id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('priceSilver').value = product.priceSilver;
+                document.getElementById('priceMono').value = product.priceMono;
+                document.getElementById('pricePoly').value = product.pricePoly;
+                document.getElementById('btnCancelProduct').style.display = 'inline-block';
+                document.getElementById('btnAddProduct').textContent = 'Modifier';
+            }
+        }
+
+        function cancelEditProduct() {
+            editingProductId = null;
+            document.getElementById('productForm').reset();
+            document.getElementById('btnCancelProduct').style.display = 'none';
+            document.getElementById('btnAddProduct').textContent = translations[currentLang].btnAddProduct;
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Supprimer ce produit ?')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('lutson_products', JSON.stringify(products));
+                renderProducts();
+            }
+        }
+
+        function renderProducts() {
+            const t = translations[currentLang];
+            let html = '<table><thead><tr>';
+            html += `<th>${t.thName}</th>`;
+            html += `<th>${t.thSilver}</th>`;
+            html += `<th>${t.thMono}</th>`;
+            html += `<th>${t.thPoly}</th>`;
+            html += `<th>${t.thActions}</th>`;
+            html += '</tr></thead><tbody>';
+
+            products.forEach(product => {
+                html += '<tr>';
+                html += `<td>${product.name}</td>`;
+                html += `<td>${product.priceSilver.toFixed(2)} €</td>`;
+                html += `<td>${product.priceMono.toFixed(2)} €</td>`;
+                html += `<td>${product.pricePoly.toFixed(2)} €</td>`;
+                html += `<td>
+                    <button class="btn btn-warning btn-sm" onclick="editProduct(${product.id})">${t.btnEdit}</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">${t.btnDelete}</button>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('productsList').innerHTML = html;
+        }
+
+        // CLIENTS FUNCTIONS
+        function addClient(event) {
+            event.preventDefault();
+            const client = {
+                id: editingClientId || Date.now(),
+                name: document.getElementById('clientName').value,
+                address: document.getElementById('clientAddress').value,
+                email: document.getElementById('clientEmail').value,
+                vat: document.getElementById('clientVAT').value
+            };
+
+            if (editingClientId) {
+                const index = clients.findIndex(c => c.id === editingClientId);
+                clients[index] = client;
+                editingClientId = null;
+            } else {
+                clients.push(client);
+            }
+
+            localStorage.setItem('lutson_clients', JSON.stringify(clients));
+            document.getElementById('clientForm').reset();
+            document.getElementById('btnCancelClient').style.display = 'none';
+            document.getElementById('btnAddClient').textContent = translations[currentLang].btnAddClient;
+            renderClients();
+        }
+
+        function editClient(id) {
+            const client = clients.find(c => c.id === id);
+            if (client) {
+                editingClientId = id;
+                document.getElementById('clientName').value = client.name;
+                document.getElementById('clientAddress').value = client.address;
+                document.getElementById('clientEmail').value = client.email;
+                document.getElementById('clientVAT').value = client.vat;
+                document.getElementById('btnCancelClient').style.display = 'inline-block';
+                document.getElementById('btnAddClient').textContent = 'Modifier';
+            }
+        }
+
+        function cancelEditClient() {
+            editingClientId = null;
+            document.getElementById('clientForm').reset();
+            document.getElementById('btnCancelClient').style.display = 'none';
+            document.getElementById('btnAddClient').textContent = translations[currentLang].btnAddClient;
+        }
+
+        function deleteClient(id) {
+            if (confirm('Supprimer ce client ?')) {
+                clients = clients.filter(c => c.id !== id);
+                localStorage.setItem('lutson_clients', JSON.stringify(clients));
+                renderClients();
+            }
+        }
+
+        function renderClients() {
+            const t = translations[currentLang];
+            let html = '<table><thead><tr>';
+            html += `<th>${t.thName}</th>`;
+            html += `<th>${t.thAddress}</th>`;
+            html += `<th>${t.thEmail}</th>`;
+            html += `<th>${t.thVAT}</th>`;
+            html += `<th>${t.thActions}</th>`;
+            html += '</tr></thead><tbody>';
+
+            clients.forEach(client => {
+                html += '<tr>';
+                html += `<td>${client.name}</td>`;
+                html += `<td>${client.address.substring(0, 50)}...</td>`;
+                html += `<td>${client.email}</td>`;
+                html += `<td>${client.vat || '-'}</td>`;
+                html += `<td>
+                    <button class="btn btn-warning btn-sm" onclick="editClient(${client.id})">${t.btnEdit}</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteClient(${client.id})">${t.btnDelete}</button>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('clientsList').innerHTML = html;
+        }
+
+        // INVOICE FUNCTIONS
+        function toggleDeposit() {
+            const depositGroup = document.getElementById('depositPercentGroup');
+            depositGroup.style.display = document.getElementById('withDeposit').checked ? 'block' : 'none';
+        }
+
+        function loadClientsForInvoice() {
+            const select = document.getElementById('invoiceClient');
+            select.innerHTML = '<option value="">-- Sélectionner --</option>';
+            clients.forEach(client => {
+                select.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+            });
+        }
+
+        function loadProductsForInvoice() {
+            const select = document.getElementById('lineProduct');
+            select.innerHTML = '<option value="">-- Sélectionner --</option>';
+            products.forEach(product => {
+                select.innerHTML += `<option value="${product.id}">${product.name}</option>`;
+            });
+        }
+
+        function addInvoiceLine() {
+            const productId = parseInt(document.getElementById('lineProduct').value);
+            const version = document.getElementById('lineVersion').value;
+            const quantity = parseInt(document.getElementById('lineQuantity').value);
+            const discount = parseFloat(document.getElementById('lineDiscount').value);
+
+            if (!productId) {
+                alert('Veuillez sélectionner un produit');
+                return;
+            }
+
+            const product = products.find(p => p.id === productId);
+            let unitPrice = 0;
+            let versionName = '';
+
+            switch(version) {
+                case 'silver':
+                    unitPrice = product.priceSilver;
+                    versionName = 'Silver & Gold';
+                    break;
+                case 'mono':
+                    unitPrice = product.priceMono;
+                    versionName = 'Monochrome';
+                    break;
+                case 'poly':
+                    unitPrice = product.pricePoly;
+                    versionName = 'Polychrome';
+                    break;
+            }
+
+            const line = {
+                id: Date.now(),
+                description: `${product.name} - ${versionName}`,
+                unitPrice: unitPrice,
+                quantity: quantity,
+                discount: discount,
+                total: unitPrice * quantity * (1 - discount / 100)
+            };
+
+            invoiceLines.push(line);
+            renderInvoiceLines();
+
+            // Reset form
+            document.getElementById('lineProduct').value = '';
+            document.getElementById('lineQuantity').value = '1';
+            document.getElementById('lineDiscount').value = '0';
+        }
+
+        function addShippingBox() {
+            const line = {
+                id: Date.now(),
+                description: 'Shipping Box',
+                unitPrice: 150,
+                quantity: 1,
+                discount: 0,
+                total: 150
+            };
+            invoiceLines.push(line);
+            renderInvoiceLines();
+        }
+
+        function addShippingFees() {
+            const amount = prompt('Montant des frais de port (€):');
+            if (amount && !isNaN(amount)) {
+                const line = {
+                    id: Date.now(),
+                    description: 'Shipping Fees',
+                    unitPrice: parseFloat(amount),
+                    quantity: 1,
+                    discount: 0,
+                    total: parseFloat(amount)
+                };
+                invoiceLines.push(line);
+                renderInvoiceLines();
+            }
+        }
+
+        function deleteInvoiceLine(id) {
+            invoiceLines = invoiceLines.filter(line => line.id !== id);
+            renderInvoiceLines();
+        }
+
+        function renderInvoiceLines() {
+            const clientType = document.getElementById('clientType').value;
+            let markup = 1;
+
+            switch(clientType) {
+                case 'decorator':
+                    markup = 1.3;
+                    break;
+                case 'individual':
+                    markup = 1.6;
+                    break;
+            }
+
+            let html = '<table><thead><tr>';
+            html += '<th>Description</th>';
+            html += '<th>Prix unitaire</th>';
+            html += '<th>Quantité</th>';
+            html += '<th>Remise</th>';
+            html += '<th>Total</th>';
+            html += '<th>Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            let subtotal = 0;
+
+            invoiceLines.forEach(line => {
+                const adjustedPrice = line.unitPrice * markup;
+                const lineTotal = adjustedPrice * line.quantity * (1 - line.discount / 100);
+                subtotal += lineTotal;
+
+                html += '<tr>';
+                html += `<td>${line.description}</td>`;
+                html += `<td>${adjustedPrice.toFixed(2)} €</td>`;
+                html += `<td>${line.quantity}</td>`;
+                html += `<td>${line.discount}%</td>`;
+                html += `<td>${lineTotal.toFixed(2)} €</td>`;
+                html += `<td><span class="action-icon" onclick="deleteInvoiceLine(${line.id})">🗑️</span></td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+
+            const addVAT = document.getElementById('addVAT').checked;
+            const withDeposit = document.getElementById('withDeposit').checked;
+            const depositPercent = parseFloat(document.getElementById('depositPercent').value) || 50;
+
+            const vat = addVAT ? subtotal * 0.2 : 0;
+            const total = subtotal + vat;
+            const deposit = withDeposit ? total * (depositPercent / 100) : 0;
+            const balance = withDeposit ? total - deposit : 0;
+
+            html += '<div class="invoice-totals mt-20">';
+            html += `<p><strong>Subtotal:</strong> ${subtotal.toFixed(2)} €</p>`;
+            if (addVAT) {
+                html += `<p><strong>VAT (20%):</strong> ${vat.toFixed(2)} €</p>`;
+            }
+            html += `<p style="font-size: 18px;"><strong>Total:</strong> ${total.toFixed(2)} €</p>`;
+            if (withDeposit) {
+                html += `<p><strong>Deposit (${depositPercent}%):</strong> ${deposit.toFixed(2)} €</p>`;
+                html += `<p><strong>Balance (${100-depositPercent}%):</strong> ${balance.toFixed(2)} €</p>`;
+            }
+            html += '</div>';
+
+            document.getElementById('invoiceItemsList').innerHTML = html;
+        }
+
+        function generateInvoiceNumber() {
+            const now = new Date();
+            const year = now.getFullYear().toString().substring(2);
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const baseNumber = year + month + day;
+
+            const todayInvoices = invoices.filter(inv => inv.number.startsWith(baseNumber));
+
+            if (todayInvoices.length === 0) {
+                return baseNumber;
+            } else {
+                const letter = String.fromCharCode(65 + todayInvoices.length); // A, B, C...
+                return baseNumber + '-' + letter;
+            }
+        }
+
+        function generateDocument() {
+            const clientId = parseInt(document.getElementById('invoiceClient').value);
+            if (!clientId) {
+                alert('Veuillez sélectionner un client');
+                return;
+            }
+
+            if (invoiceLines.length === 0) {
+                alert('Veuillez ajouter au moins une ligne');
+                return;
+            }
+
+            const client = clients.find(c => c.id === clientId);
+            const docType = document.getElementById('docType').value;
+            const clientType = document.getElementById('clientType').value;
+            const addVAT = document.getElementById('addVAT').checked;
+            const withDeposit = document.getElementById('withDeposit').checked;
+            const depositPercent = parseFloat(document.getElementById('depositPercent').value) || 50;
+
+            let markup = 1;
+            switch(clientType) {
+                case 'decorator':
+                    markup = 1.3;
+                    break;
+                case 'individual':
+                    markup = 1.6;
+                    break;
+            }
+
+            let subtotal = 0;
+            const adjustedLines = invoiceLines.map(line => {
+                const adjustedPrice = line.unitPrice * markup;
+                const lineTotal = adjustedPrice * line.quantity * (1 - line.discount / 100);
+                subtotal += lineTotal;
+                return {
+                    ...line,
+                    adjustedPrice,
+                    lineTotal
+                };
+            });
+
+            const vat = addVAT ? subtotal * 0.2 : 0;
+            const total = subtotal + vat;
+            const deposit = withDeposit ? total * (depositPercent / 100) : 0;
+            const balance = withDeposit ? total - deposit : 0;
+
+            const invoiceNumber = generateInvoiceNumber();
+            const now = new Date();
+            const dateStr = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+
+            currentInvoice = {
+                id: Date.now(),
+                number: invoiceNumber,
+                date: dateStr,
+                dateObj: now,
+                type: docType,
+                client: client,
+                lines: adjustedLines,
+                subtotal,
+                vat,
+                total,
+                deposit,
+                balance,
+                withDeposit,
+                depositPercent,
+                addVAT,
+                sent: false
+            };
+
+            renderInvoicePreview(currentInvoice);
+            openModal();
+        }
+
+        function renderInvoicePreview(invoice) {
+            let html = `
+                <div class="invoice-preview">
+                    <div class="invoice-header">
+                        <div class="invoice-logo">LUTSON</div>
+                        <div class="invoice-company-info">
+                            17 rte de Rivière Basse<br>
+                            32160 Préchac Sur Adour - France<br>
+                            info@lutson.com | gudrun@lutson.com<br>
+                            www.lutson.com
+                        </div>
+                    </div>
+
+                    <div class="invoice-details">
+                        <div class="invoice-client-info">
+                            <strong>Date & Place:</strong> Préchac, ${invoice.date}<br><br>
+                            <strong>${invoice.client.name}</strong><br>
+                            ${invoice.client.address.replace(/\n/g, '<br>')}<br>
+                            ${invoice.client.email}
+                        </div>
+                        <div class="invoice-meta">
+                            <h2>${invoice.type.toUpperCase()} N° ${invoice.number}</h2>
+                        </div>
+                    </div>
+
+                    <div class="invoice-items">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th style="text-align: right;">Unit Price</th>
+                                    <th style="text-align: center;">Quantity</th>
+                                    <th style="text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            invoice.lines.forEach(line => {
+                let description = line.description;
+                if (line.discount > 0) {
+                    description += ` (Discount ${line.discount}%)`;
+                }
+                html += `
+                    <tr>
+                        <td>${description}</td>
+                        <td style="text-align: right;">${line.adjustedPrice.toFixed(2)} €</td>
+                        <td style="text-align: center;">${line.quantity}</td>
+                        <td style="text-align: right;">${line.lineTotal.toFixed(2)} €</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="invoice-totals">
+                        <table>
+                            <tr>
+                                <td><strong>Subtotal:</strong></td>
+                                <td style="text-align: right;">${invoice.subtotal.toFixed(2)} €</td>
+                            </tr>
+            `;
+
+            if (invoice.addVAT) {
+                html += `
+                            <tr>
+                                <td><strong>VAT (20%):</strong></td>
+                                <td style="text-align: right;">${invoice.vat.toFixed(2)} €</td>
+                            </tr>
+                `;
+            }
+
+            html += `
+                            <tr style="font-size: 16px;">
+                                <td><strong>Total:</strong></td>
+                                <td style="text-align: right;"><strong>${invoice.total.toFixed(2)} €</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="invoice-total-box">
+                        <strong>Total: ${invoice.total.toFixed(2)} €</strong> ; ${invoice.addVAT ? 'VAT 20%' : 'VAT 0% for export'}
+            `;
+
+            if (invoice.withDeposit) {
+                html += `<br><br>
+                        <strong>Deposit (${invoice.depositPercent}%):</strong> ${invoice.deposit.toFixed(2)} € - to be wired to our account at Bank Van Breda Gent.<br>
+                        <strong>Balance (${100-invoice.depositPercent}%):</strong> ${invoice.balance.toFixed(2)} € - to be wired prior to shipment.
+                `;
+            }
+
+            html += `
+                    </div>
+
+                    <p style="margin-top: 20px;">
+                        Estimated shipping costs based on a standard parcel. If there is a notable difference, we may suggest an adjustment.
+                    </p>
+
+                    <p style="margin-top: 20px;">
+                        Thank you for your order.<br>
+                        Sincerely Yours,
+                    </p>
+
+                    <div class="invoice-footer">
+                        <div class="invoice-footer-col">
+                            <strong>Lutson SARL</strong><br>
+                            17 route de rivière basse<br>
+                            32160 Préchac sur Adour<br>
+                            info@lutson.com | gudrun@lutson.com<br><br>
+                            <strong>SIRET:</strong> 41124528500019<br>
+                            <strong>Eori:</strong> FR 411 245 285 00019<br>
+                            <strong>Intra-community VAT:</strong> FR45411245285<br>
+                            <strong>IBAN:</strong> BE97 6451 2754 6749<br>
+                            <strong>BIC / SWIFT:</strong> JVBABE22
+                        </div>
+                        <div class="invoice-footer-col">
+                            <strong>General Terms</strong><br><br>
+                            <strong>Prices in €, VAT, Taxes Not Included</strong><br>
+                            <strong>Payment:</strong> 50% deposit, 50% before shipment<br>
+                            <strong>Packaging:</strong> Orders over 20 panels are boxed for secure shipping.<br>
+                            Maximum box contents: 40-45 panels. Price per box: 150€.<br><br>
+                            <strong>VAT Policy:</strong><br>
+                            <strong>Clients in France:</strong> VAT 20%<br>
+                            <strong>EU Business Clients:</strong> VAT exempt with valid VAT number (reverse charge, article 283-2 of the French CGI)<br>
+                            <strong>Non-EU Clients:</strong> VAT exempt (article 262 I of the French CGI)
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('invoicePreview').innerHTML = html;
+        }
+
+        function openModal() {
+            document.getElementById('invoiceModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('invoiceModal').classList.remove('active');
+        }
+
+        function downloadPDF() {
+            // Save invoice before opening
+            invoices.push(currentInvoice);
+            localStorage.setItem('lutson_invoices', JSON.stringify(invoices));
+
+            // Open print window
+            const printWindow = window.open('', '_blank');
+            const invoiceHTML = document.getElementById('invoicePreview').innerHTML;
+
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Invoice ${currentInvoice.number}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            color: #333;
+                        }
+                        .invoice-preview {
+                            max-width: 800px;
+                            margin: 0 auto;
+                        }
+                        .invoice-header {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 2px solid #667eea;
+                        }
+                        .invoice-logo {
+                            font-size: 32px;
+                            font-weight: bold;
+                            color: #667eea;
+                        }
+                        .invoice-company-info {
+                            text-align: right;
+                            font-size: 11px;
+                        }
+                        .invoice-details {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 30px;
+                        }
+                        .invoice-items table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 20px 0;
+                        }
+                        .invoice-items th {
+                            background: #f8f9fa;
+                            padding: 10px;
+                            text-align: left;
+                            border-bottom: 2px solid #dee2e6;
+                        }
+                        .invoice-items td {
+                            padding: 8px 10px;
+                            border-bottom: 1px solid #dee2e6;
+                        }
+                        .invoice-totals table {
+                            margin-left: auto;
+                            width: 300px;
+                        }
+                        .invoice-totals td {
+                            padding: 5px 10px;
+                        }
+                        .invoice-total-box {
+                            background: #f8f9fa;
+                            padding: 15px;
+                            margin: 20px 0;
+                            border-left: 4px solid #667eea;
+                        }
+                        .invoice-footer {
+                            margin-top: 40px;
+                            padding-top: 20px;
+                            border-top: 2px solid #dee2e6;
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 9px;
+                            color: #6c757d;
+                        }
+                        .invoice-footer-col {
+                            flex: 1;
+                            padding: 0 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${invoiceHTML}
+                </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+
+            // Reset invoice form
+            invoiceLines = [];
+            renderInvoiceLines();
+            document.getElementById('invoiceClient').value = '';
+            document.getElementById('addVAT').checked = false;
+            document.getElementById('withDeposit').checked = false;
+            toggleDeposit();
+
+            renderTracking();
+        }
+
+        function printInvoice() {
+            window.print();
+        }
+
+        // TRACKING FUNCTIONS
+        function renderTracking() {
+            const t = translations[currentLang];
+            let html = '<table><thead><tr>';
+            html += `<th>${t.thDate}</th>`;
+            html += `<th>${t.thNumber}</th>`;
+            html += `<th>${t.thType}</th>`;
+            html += `<th>${t.thClient}</th>`;
+            html += `<th>${t.thTotal}</th>`;
+            html += `<th>${t.thSent}</th>`;
+            html += `<th>${t.thActions}</th>`;
+            html += '</tr></thead><tbody>';
+
+            invoices.sort((a, b) => new Date(b.dateObj) - new Date(a.dateObj));
+
+            invoices.forEach(invoice => {
+                const rowClass = invoice.sent ? 'sent' : '';
+                html += `<tr class="${rowClass}">`;
+                html += `<td>${invoice.date}</td>`;
+                html += `<td>${invoice.number}</td>`;
+                html += `<td>${invoice.type}</td>`;
+                html += `<td>${invoice.client.name}</td>`;
+                html += `<td>${invoice.total.toFixed(2)} €</td>`;
+                html += `<td><input type="checkbox" ${invoice.sent ? 'checked' : ''} onchange="toggleSent(${invoice.id})"></td>`;
+                html += `<td>
+                    <span class="action-icon" onclick="viewInvoice(${invoice.id})">👁️</span>
+                    <span class="action-icon" onclick="deleteInvoice(${invoice.id})">🗑️</span>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('trackingList').innerHTML = html;
+        }
+
+        function toggleSent(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (invoice) {
+                invoice.sent = !invoice.sent;
+                localStorage.setItem('lutson_invoices', JSON.stringify(invoices));
+                renderTracking();
+            }
+        }
+
+        function viewInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (invoice) {
+                renderInvoicePreview(invoice);
+                openModal();
+            }
+        }
+
+        function deleteInvoice(id) {
+            if (confirm('Supprimer cette facture ?')) {
+                invoices = invoices.filter(inv => inv.id !== id);
+                localStorage.setItem('lutson_invoices', JSON.stringify(invoices));
+                renderTracking();
+            }
+        }
+
+        function exportCSV() {
+            let csv = 'Date,Numero,Type,Client,Total,Envoye\n';
+            invoices.forEach(invoice => {
+                csv += `${invoice.date},${invoice.number},${invoice.type},${invoice.client.name},${invoice.total.toFixed(2)},${invoice.sent ? 'Oui' : 'Non'}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `lutson_tracking_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // INITIALIZE
+        document.addEventListener('DOMContentLoaded', function() {
+            renderProducts();
+            renderClients();
+            renderTracking();
+            updateLanguage();
+        });
+    </script>
+</body>
+</html>
