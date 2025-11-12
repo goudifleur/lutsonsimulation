@@ -615,6 +615,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label id="labelCategory">Catégorie / Objectif</label>
+                    <select id="invoiceCategory">
+                        <option value="Vente officielle">Vente officielle</option>
+                        <option value="Quote">Quote</option>
+                        <option value="Échantillon gratuit">Échantillon gratuit</option>
+                        <option value="Test produit">Test produit</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label class="checkbox-label">
                         <input type="checkbox" id="addVAT">
                         <span id="labelAddVAT">Ajouter TVA 20%</span>
@@ -746,6 +756,7 @@
                 labelDocType: 'Type de document',
                 labelSelectClient: 'Sélectionner le client',
                 labelClientType: 'Type de client',
+                labelCategory: 'Catégorie / Objectif',
                 labelAddVAT: 'Ajouter TVA 20%',
                 labelWithDeposit: 'Avec acompte',
                 labelDepositPercent: 'Pourcentage d\'acompte (%)',
@@ -810,6 +821,7 @@
                 labelDocType: 'Document type',
                 labelSelectClient: 'Select client',
                 labelClientType: 'Client type',
+                labelCategory: 'Category / Purpose',
                 labelAddVAT: 'Add VAT 20%',
                 labelWithDeposit: 'With deposit',
                 labelDepositPercent: 'Deposit percentage (%)',
@@ -1245,6 +1257,7 @@
             const client = clients.find(c => c.id === clientId);
             const docType = document.getElementById('docType').value;
             const clientType = document.getElementById('clientType').value;
+            const category = document.getElementById('invoiceCategory').value;
             const addVAT = document.getElementById('addVAT').checked;
             const withDeposit = document.getElementById('withDeposit').checked;
             const depositPercent = parseFloat(document.getElementById('depositPercent').value) || 50;
@@ -1288,6 +1301,7 @@
                 dateObj: now,
                 type: docType,
                 client: client,
+                category: category,
                 lines: adjustedLines,
                 subtotal,
                 vat,
@@ -1571,6 +1585,7 @@
             html += `<th>${t.thNumber}</th>`;
             html += `<th>${t.thType}</th>`;
             html += `<th>${t.thClient}</th>`;
+            html += `<th>Catégorie</th>`;
             html += `<th>${t.thTotal}</th>`;
             html += `<th>${t.thSent}</th>`;
             html += `<th>${t.thActions}</th>`;
@@ -1585,6 +1600,7 @@
                 html += `<td>${invoice.number}</td>`;
                 html += `<td>${invoice.type}</td>`;
                 html += `<td>${invoice.client.name}</td>`;
+                html += `<td>${invoice.category || 'N/A'}</td>`;
                 html += `<td>${invoice.total.toFixed(2)} €</td>`;
                 html += `<td><input type="checkbox" ${invoice.sent ? 'checked' : ''} onchange="toggleSent(${invoice.id})"></td>`;
                 html += `<td>
@@ -1624,16 +1640,28 @@
         }
 
         function exportCSV() {
-            let csv = 'Date,Numero,Type,Client,Total,Envoye\n';
+            // CSV détaillé avec toutes les lignes de produits
+            let csv = 'Date,Destinataire,Description,Quantité,Coût Unit. HT,Total HT,TVA %,TVA €,Total TTC,Objectif\n';
+
+            invoices.sort((a, b) => new Date(a.dateObj) - new Date(b.dateObj));
+
             invoices.forEach(invoice => {
-                csv += `${invoice.date},${invoice.number},${invoice.type},${invoice.client.name},${invoice.total.toFixed(2)},${invoice.sent ? 'Oui' : 'Non'}\n`;
+                const vatRate = invoice.addVAT ? 20 : 0;
+
+                invoice.lines.forEach(line => {
+                    const lineSubtotal = line.lineTotal;
+                    const lineVAT = invoice.addVAT ? lineSubtotal * 0.2 : 0;
+                    const lineTotal = lineSubtotal + lineVAT;
+
+                    csv += `${invoice.date},"${invoice.client.name}","${line.description}",${line.quantity},${line.adjustedPrice.toFixed(2)},${lineSubtotal.toFixed(2)},${vatRate},${lineVAT.toFixed(2)},${lineTotal.toFixed(2)},"${invoice.category || 'N/A'}"\n`;
+                });
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `lutson_tracking_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `lutson_details_${new Date().toISOString().split('T')[0]}.csv`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
